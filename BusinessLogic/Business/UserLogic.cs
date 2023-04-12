@@ -60,6 +60,13 @@ namespace BusinessLogic.Business
         {
             try
             {
+                foreach (var item in userViewModelsTemp)
+                {
+                    if (item.Name == userViewModel.Name)
+                    {
+                        return false;
+                    }
+                }
                 UserViewModel user = new UserViewModel();
                 user.Id = userViewModel.Id;
                 user.Name = userViewModel.Name;
@@ -102,7 +109,12 @@ namespace BusinessLogic.Business
             }
         }
 
-
+        public bool DeleteUserTemp(string name) 
+        {
+            var user = userViewModelsTemp.FirstOrDefault(x => x.Name == name);
+            userViewModelsTemp.Remove(user);
+            return true;
+        }
 
     }
 }

@@ -76,6 +76,11 @@
                 <MudTd DataLabel="Name">@context.Name</MudTd>
                 <MudTd DataLabel="DOB">@context.Dob</MudTd>
                 <MudTd DataLabel="Manager">@context.Manager</MudTd>
+                <MudButton Variant="Variant.Filled" OnClick="@(() => Delete(context.Name))">
+                    <MudFab Color="Color.Secondary"
+                            Icon="@Icons.Material.Filled.Delete" Size="Size.Small" IconSize="Size.Small">
+                    </MudFab>
+                </MudButton>
             </RowTemplate>
             <PagerContent>
                 <MudTablePager PageSizeOptions="new int[]{5,10,20,50}"></MudTablePager>
@@ -166,24 +171,23 @@
 
 
 
-    private async Task Delete(int id)
+    private async Task Delete(string name)
     {
-        //bool? result = await Dialog.ShowMessageBox(
-        //    "Warning",
-        //    "Deleting can not be undone!",
-        //    yesText: "Delete!", cancelText: "Cancel");
-        //if (result == true)
-        //{
-        //    var response = UserLogic.DeleteUser(id);
-        //    if (response.StatusCode == 0)
-        //    {
-        //        snackBar.Add($"{response.Message}", Severity.Success);
-        //        GetAllUser();
-        //    }
-        //    else
-        //    {
-        //        snackBar.Add($"{response.Message}", Severity.Error);
-        //    }
-        //}
+        bool? result = await Dialog.ShowMessageBox(
+            "Warning",
+            "Deleting can not be undone!",
+            yesText: "Delete!", cancelText: "Cancel");
+        if (result == true)
+        {
+            var response = UserLogic.DeleteUserTemp(name);
+            if (response == true)
+            {
+                snackBar.Add("Xóa Thành Công", Severity.Success);
+            }
+            else
+            {
+                snackBar.Add("Xóa không thành công", Severity.Error);
+            }
+        }
     }
 }

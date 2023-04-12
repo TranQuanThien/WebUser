@@ -13,5 +13,6 @@ namespace BusinessLogic.IService
         List<UserViewModel> GetUserTemp();
         bool AddUserTemp(UserViewModel userViewModel);
         bool ImportListUser();
+        bool DeleteUserTemp(string name);
     }
 }
