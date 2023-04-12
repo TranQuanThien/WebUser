@@ -84,7 +84,7 @@ namespace BusinessLogic.Business
 
         public bool ImportListUser()
         {
-            if (userViewModelsTemp.Count() <= 10)
+            if (userViewModelsTemp.Count() < 10)
             {
                 return false;
             }
