@@ -1,0 +1,202 @@
+﻿@page "/activations"
+@attribute [Authorize(Roles = "Administrator")]
+@inject IActivationLogic ActivationLogic
+@inject IDialogService Dialog
+@inject NavigationManager NavigationManager
+@inject MudBlazor.ISnackbar snackBar
+
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.h6">SERINO</MudText>
+        </MudCardContent>
+    </MudCardHeader>
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudCardContent>
+                <MudTextField @bind-Value="activation.SerialNumber" Label="SerialNumber"
+                              Variant="Variant.Filled" Margin="Margin.Normal" @onkeyup="@((e) => HandleKeyDown(e, activation.SerialNumber))"></MudTextField>
+
+            </MudCardContent>
+        </MudItem>
+        <MudItem xs="12" md="4">
+        </MudItem>
+    </MudGrid>
+    <br />
+    <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="Save">Active</MudButton>
+    <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="DeleteSerino">UnActive</MudButton>
+</MudCard>
+<br />
+<MudGrid>
+    <MudItem xl="6">
+        <MudTable Elevation="25" Items="GetActivation()" Dense="true" Striped="true" Bordered="true" Filter="new Func<ActivationViewModel, bool>(Search)" @bind-activation="activation">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Activations</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search for FirmWares"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>SerialNumber</MudTh>
+                <MudTh>Date</MudTh>
+                <MudTh>DeviceType</MudTh>
+                <MudTh>Action</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id">@context.Id</MudTd>
+                <MudTd DataLabel="SerialNumber">@context.SerialNumber</MudTd>
+                <MudTd DataLabel="DateAdded">@context.DateAdded</MudTd>
+                <MudTd DataLabel="DeviceType">@context.DeviceType</MudTd>
+                <MudTd DataLabel="">
+
+
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{5,10,20,50}"></MudTablePager>
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+    <MudItem xl="6">
+        <MudTable Elevation="25" Items="GetInfoSerino()" Dense="true" Striped="true" Bordered="true">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Activations</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchSerino" Label="SerialNumber"
+                              Variant="Variant.Filled" Margin="Margin.Normal"></MudTextField>
+                <br />
+                <MudButton Variant="Variant.Filled" OnClick="SearchSerino">
+                    <MudFab Color="Color.Dark"
+                            Icon="@Icons.Material.Filled.Search" Size="Size.Small" IconSize="Size.Small" >
+                    </MudFab>
+                </MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>SerialNumber</MudTh>
+                <MudTh>Date</MudTh>
+                <MudTh>DeviceType</MudTh>
+                <MudTh>Action</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id">@context.Id</MudTd>
+                <MudTd DataLabel="SerialNumber">@context.SerialNumber</MudTd>
+                <MudTd DataLabel="DateAdded">@context.DateAdded</MudTd>
+                <MudTd DataLabel="DeviceType">@context.DeviceType</MudTd>
+                <MudTd DataLabel="">
+
+
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{5,10,20,50}"></MudTablePager>
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+@code {
+    private string searchString = "";
+    private string searchSerino = "";
+    public ActivationViewModel activation = new ActivationViewModel();
+    List<ActivationViewModel> activations = new List<ActivationViewModel>();
+
+    public SerinoViewModel serino = new SerinoViewModel();
+    List<SerinoViewModel> serinos = new List<SerinoViewModel>();
+
+    Response response = new Response(Status.ValidationError, "loi he thong");
+    protected override async Task OnInitializedAsync()
+    {
+        GetActivation();
+    }
+    private async Task Save()
+    {
+        response = ActivationLogic.CreateActivation(activation);
+        if (response.StatusCode == 0)
+        {
+            snackBar.Add($"{response.Message}", Severity.Success);
+            GetActivation();
+        }
+        else
+        {
+            snackBar.Add($"{response.Message}", Severity.Error);
+        }
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e, string serialNumber)
+    {
+        if (e.Key == "Enter")
+        {
+            // Do something with the serialNumber value
+            Save();
+        }
+    }
+
+    private void HandleInputChange(ChangeEventArgs e)
+    {
+        activation.SerialNumber = (string)e.Value;
+    }
+    public List<ActivationViewModel> GetActivation()
+    {
+        return ActivationLogic.GetAllActivation();
+    }
+
+    public List<SerinoViewModel> GetInfoSerino()
+    {
+        return serinos;
+    }
+
+    private bool Search(ActivationViewModel activation)
+    {
+        try
+        {
+            if (activation.SerialNumber is not null && (
+                 activation.SerialNumber.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+            return false;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    private async Task SearchSerino()
+    {
+        try
+        {
+            serinos = ActivationLogic.GetInfoActivationBySerino(searchSerino);
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    private async Task DeleteSerino()
+    {
+        int id = 1;
+        bool? result = await Dialog.ShowMessageBox(
+           "Warning",
+           "Deleting can not be undone!",
+           yesText: "Delete!", cancelText: "Cancel");
+        if (result == true)
+        {
+            response = ActivationLogic.DeleteActivation(activation);
+            if (response.StatusCode == 0)
+            {
+                snackBar.Add($"{response.Message}", Severity.Success);
+                GetActivation();
+            }
+            else
+            {
+                snackBar.Add($"{response.Message}", Severity.Error);
+            }
+        }
+    }
+}

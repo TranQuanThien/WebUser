@@ -1,0 +1,189 @@
+﻿@page "/users"
+@attribute [Authorize(Roles = "Administrator")]
+@inject IUserLogic UserLogic
+@inject MudBlazor.ISnackbar snackBar
+@inject NavigationManager NavigationManager
+@inject IDialogService Dialog
+@inject MudBlazor.ISnackbar snackBar
+<MudCard Elevation="25">
+    <MudCardHeader>
+        <MudCardContent>
+            <MudText Typo="Typo.h6">Add User</MudText>
+        </MudCardContent>
+    </MudCardHeader>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudCardContent>
+
+                <MudTextField @bind-Value="user.Name" Label="Name"
+                              Variant="Variant.Filled" Margin="Margin.Normal"></MudTextField>
+                <MudDatePicker Label="DateOfBirth" Variant="Variant.Filled" @bind-Date="user.Dob" />
+                <MudTextField @bind-Value="user.Manager" Label="Manger"
+                              Variant="Variant.Filled" Margin="Margin.Normal"></MudTextField>
+                <br />
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Save"> Save User </MudButton>
+            </MudCardContent>
+        </MudItem>
+        <MudItem xs="12" md="6">
+        </MudItem>
+    </MudGrid>
+</MudCard>
+<br />
+<MudGrid>
+    <MudItem xl="6">
+        <MudTable Elevation="25" Items="GetAllUser()" Dense="true" Striped="true" Bordered="true" Filter="new Func<UserViewModel, bool>(Search)" @bind-user="user">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Users</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search for Users"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>DOB</MudTh>
+                <MudTh>Manager</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id">@context.Id</MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="DOB">@context.Dob</MudTd>
+                <MudTd DataLabel="Manager">@context.Manager</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{5,10,20,50}"></MudTablePager>
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+    <MudItem xl="6">
+        <MudTable Elevation="25" Items="GetUserTemp()" Dense="true" Striped="true" Bordered="true" Filter="new Func<UserViewModel, bool>(Search)" @bind-user="user">
+            <ToolBarContent>
+                <MudText Typo="Typo.h6">Users</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="searchString" Placeholder="Search for Users"
+                              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Id</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>DOB</MudTh>
+                <MudTh>Manager</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Id">@context.Id</MudTd>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="DOB">@context.Dob</MudTd>
+                <MudTd DataLabel="Manager">@context.Manager</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[]{5,10,20,50}"></MudTablePager>
+            </PagerContent>
+            <PagerContent>
+                <br />
+                <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="SaveDataBase"> Save User </MudButton>
+            </PagerContent>
+        </MudTable>
+
+    </MudItem>
+</MudGrid>
+@code {
+    private string searchString = "";
+    DateTime? date = DateTime.Today;
+    private UserViewModel user = new UserViewModel();
+    List<UserViewModel> users = new List<UserViewModel>();
+    Response response = new Response(Status.ValidationError, "loi he thong");
+
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    GetAllUser();
+    //}
+
+
+
+    public List<UserViewModel> GetAllUser()
+    {
+        return UserLogic.GetAllUser();
+    }
+
+    public List<UserViewModel> GetUserTemp()
+    {
+        return UserLogic.GetUserTemp();
+    }
+
+    private bool Search(UserViewModel user)
+    {
+        try
+        {
+            if (user.Name is not null && (
+                 user.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+            return false;
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
+    }
+
+    private async Task Save()
+    {
+        var response = UserLogic.AddUserTemp(user);
+        if (response == true)
+        {
+            snackBar.Add($"Thêm vào danh sách chờ thành công", Severity.Success);
+            GetUserTemp();
+        }
+        else
+        {
+            snackBar.Add($"Thêm vào danh sách thất bại", Severity.Error);
+        }
+    }
+
+    private async Task SaveDataBase()
+    {
+        var response = UserLogic.ImportListUser();
+        if (response == true)
+        {
+            snackBar.Add($"Import Data Thành Công", Severity.Success);
+        }
+        else
+        {
+            bool? result = await Dialog.ShowMessageBox(
+                "Warning",
+                "Tối Thiếu 10 User",
+                yesText: "Ok", cancelText: "Cancel");
+        }
+    }
+    private async Task Edit(int id)
+    {
+        NavigationManager.NavigateTo($"User/{id}");
+    }
+
+
+
+    private async Task Delete(int id)
+    {
+        //bool? result = await Dialog.ShowMessageBox(
+        //    "Warning",
+        //    "Deleting can not be undone!",
+        //    yesText: "Delete!", cancelText: "Cancel");
+        //if (result == true)
+        //{
+        //    var response = UserLogic.DeleteUser(id);
+        //    if (response.StatusCode == 0)
+        //    {
+        //        snackBar.Add($"{response.Message}", Severity.Success);
+        //        GetAllUser();
+        //    }
+        //    else
+        //    {
+        //        snackBar.Add($"{response.Message}", Severity.Error);
+        //    }
+        //}
+    }
+}

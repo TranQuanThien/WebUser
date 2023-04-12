@@ -1,0 +1,47 @@
+﻿@page "/login"
+@using WebSerino.Authentication
+@inject UserAccountService userAccountService
+@inject IJSRuntime js
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+
+<div class="body"></div>
+<div class="grad"></div>
+<div class="header">
+    <div>Kai<span>Labs</span></div>
+</div>
+<br>
+<div class="login">
+    <input type="text" @bind="model.UserName" placeholder="username" name="user"><br>
+    <input type="password" @bind="model.Password" placeholder="password" name="password"><br>
+    <input type="button" @onclick="Authenticate" value="Login">
+</div>
+
+
+@code {
+    private class Model
+    {
+        public string UserName { get; set; }
+        public string Password { get; set; }
+    }
+
+    private Model model = new Model();
+
+    private async Task Authenticate()
+    {
+        var userAccount = userAccountService.GetByUserName(model.UserName);
+        if (userAccount == null || userAccount.Password != model.Password)
+        {
+            await js.InvokeVoidAsync("alert", "Invalid User Name or Password");
+            return;
+        }
+
+        var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
+        await customAuthStateProvider.UpdateAuthenticationState(new UserSession
+            {
+                UserName = userAccount.UserName,
+                Role = userAccount.Role
+            });
+        navManager.NavigateTo("/", true);
+    }
+}
