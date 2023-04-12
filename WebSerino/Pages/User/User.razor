@@ -14,11 +14,10 @@
     <MudGrid>
         <MudItem xs="12" md="6">
             <MudCardContent>
-
-                <MudTextField @bind-Value="user.Name" Label="Name"
+                <MudTextField @bind-Value="user.Name" Label="Name" Required="true" RequiredError="User name is required!"
                               Variant="Variant.Filled" Margin="Margin.Normal"></MudTextField>
                 <MudDatePicker Label="DateOfBirth" Variant="Variant.Filled" @bind-Date="user.Dob" />
-                <MudTextField @bind-Value="user.Manager" Label="Manger"
+                <MudTextField @bind-Value="user.Manager" Label="Manger" Required="true" RequiredError="Manager is required!"
                               Variant="Variant.Filled" Margin="Margin.Normal"></MudTextField>
                 <br />
                 <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Save"> Save User </MudButton>
